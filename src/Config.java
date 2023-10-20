@@ -1,9 +1,8 @@
+import org.json.JSONObject;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
-import org.json.JSONObject;
 
 public class Config {
     public static JSONObject getConfig(){
