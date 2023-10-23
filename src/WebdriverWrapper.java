@@ -16,19 +16,32 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.Set;
 
+/**
+ * A wrapper class for WebDriver with additional features for interacting with web applications.
+ */
 public class WebdriverWrapper {
     public final WebDriver driver;
     private final ArrayList<Request> requests;
     private DevTools devTools;
 
+    /**
+     * Constructs a WebdriverWrapper with the provided configuration.
+     *
+     * @param config A JSON object containing configuration options, such as a proxy.
+     */
     public WebdriverWrapper(JSONObject config) {
         this.driver = WebdriverUtils.initializeChromedriver(config.optString("proxy", ""));
         this.requests = new ArrayList<>();
         setupDevTools();
     }
 
+    /**
+     * Initializes the DevTools session for network monitoring.
+     */
     private void setupDevTools() {
         this.devTools = ((HasDevTools) driver).getDevTools();
         devTools.createSession();
@@ -36,14 +49,20 @@ public class WebdriverWrapper {
         devTools.addListener(Network.requestWillBeSent(), requestWillBeSent -> requests.add(requestWillBeSent.getRequest()));
     }
 
+    /**
+     * Logs in to Prolific using user credentials or stored cookies.
+     *
+     * @param user The user's credentials for login.
+     */
     public void login(User user) {
         if (Files.exists(Path.of("cookies.json"))) {
             try {
                 loginWithCookies();
-            } catch (IOException e) {
+            } catch (IOException | RuntimeException e) {
                 deleteCookies();
+                driver.get("https://internal-api.prolific.com/auth/accounts/login/");
                 loginNormally(user);
-                throw new RuntimeException("Error while loading cookies from file. " + e.getMessage(), e);
+                System.err.println("Error while loading cookies from file. " + e.getMessage());
             }
         } else {
             loginNormally(user);
@@ -83,6 +102,12 @@ public class WebdriverWrapper {
     }
 
 
+    /**
+     * Retrieves the authorization token from the HTTP requests.
+     *
+     * @return The authorization token if found.
+     * @throws RuntimeException if not found.
+     */
     public String grabAuthToken() {
         Optional<Request> prolificRequest = requests.stream()
                 .filter(request -> request.getHeaders().containsKey("Authorization"))
@@ -99,9 +124,9 @@ public class WebdriverWrapper {
         driver.get("https://internal-api.prolific.com/auth/accounts/login/");
         loadCookies();
 
-        driver.navigate().refresh();
+        driver.get("https://app.prolific.com/studies");
         wait(5000);
-        if (!driver.getCurrentUrl().startsWith("https://app.prolific.com/")) {
+        if (!driver.getCurrentUrl().startsWith("https://app.prolific.com/studies")) {
             throw new RuntimeException("Failed logging in with cookies");
         }
     }
@@ -120,16 +145,14 @@ public class WebdriverWrapper {
     private void wait(int milliseconds) {
         try {
             Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            // Handle or log the exception
+        } catch (InterruptedException ignored) {
         }
     }
 
     private void handleConsentPopup() {
         try {
             driver.findElement(By.xpath("//*[@id=\"klaro\"]/div/div/div[2]/div/div/div/button[1]")).click();
-        } catch (org.openqa.selenium.NoSuchElementException e) {
-            // Handle or log the exception
+        } catch (org.openqa.selenium.NoSuchElementException ignored) {
         }
     }
 
@@ -175,4 +198,8 @@ public class WebdriverWrapper {
         }
     }
 
+    public void quit() {
+        devTools.close();
+        driver.quit();
+    }
 }
