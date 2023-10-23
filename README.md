@@ -8,6 +8,16 @@
   <li>Uses a proxy server if configured in the application's JSON configuration.</li>
 </ul>
 
+## Configuration
+```
+{
+  "interval": 30,
+  "proxy": "proxy-hostname:proxy-port"
+}
+```
+- "proxy": Proxy server information. Leave it empty to disable proxy.
+- "interval": Interval (in seconds) between each check for available studies.
+
 ## License
 This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.
 
