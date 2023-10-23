@@ -34,7 +34,7 @@ class Main {
             if (statusCode == 200 && !studies.isEmpty()) {
                 ProlificAPI.Study study = studies.get(0);
                 ProlificAPI.APIResult<JSONObject> reserveApiResult = ProlificAPI.reserveStudy(study.id(),
-                        user.getProlificId());
+                        user.prolificId());
                 statusCode = reserveApiResult.status();
 
                 if (statusCode == 201) {
