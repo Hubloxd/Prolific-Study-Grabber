@@ -116,4 +116,16 @@ public class User {
                 ", prolificId='" + prolificId + '\'' +
                 '}';
     }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getProlificId() {
+        return prolificId;
+    }
 }
