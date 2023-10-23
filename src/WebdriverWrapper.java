@@ -133,8 +133,8 @@ public class WebdriverWrapper {
 
     private void loginNormally(User user) {
         driver.get("https://internal-api.prolific.com/auth/accounts/login/");
-        driver.findElement(By.id("id_username")).sendKeys(user.getEmail());
-        driver.findElement(By.name("password")).sendKeys(user.getPassword());
+        driver.findElement(By.id("id_username")).sendKeys(user.email());
+        driver.findElement(By.name("password")).sendKeys(user.password());
         driver.findElement(By.id("login")).submit();
 
         wait(3000);
